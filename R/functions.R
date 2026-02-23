@@ -17,6 +17,21 @@
 #'
 NULL
 
+getModel <- function()
+{
+  # Read in MS2Quant model
+  data_list_sirius <- readRDS(system.file("model", "model_MS2Quant_xgbTree_allData.RData", package = "MS2Quant"))
+  MS2Quant = data_list_sirius$model
+  # patch up embedded XGBoost model, since we can't realiably serialize that with saveRDS()/readRDS() between XGBoost
+  # versions
+  expmod <- xgboost::xgb.load(system.file("model", "model_MS2Quant_xgb.model", package = "MS2Quant"))
+  # fill in missing metadata from the original model, which is needed for predict() to work
+  restoreNames <- c("feature_names", "nfeatures", "xNames", "problemType")
+  expmod[restoreNames] <- MS2Quant$finalModel[restoreNames]
+  MS2Quant$finalModel <- expmod
+  return(MS2Quant)
+}
+
 #' Linear regression
 #'
 #' This function calculates the linear regression parameters from specified x and y values. Additionally, it checks the linearity based on residuals. In case there exists a residual with absolute value higher than 10, the highest value x-y point will be removed and new linear regression is generated without it. At least 5 datapoints have to remain.
@@ -885,8 +900,7 @@ MS2Quant_quantify <- function(calibrants_suspects,
                               fingerprints = ""){
 
   # Read in MS2Quant model
-  data_list_sirius <- readRDS(system.file("model", "model_MS2Quant_xgbTree_allData.RData", package = "MS2Quant"))
-  MS2Quant = data_list_sirius$model
+  MS2Quant <- getModel()
 
   if (is.character(calibrants_suspects))
   {
@@ -1060,8 +1074,7 @@ MS2Quant_predict_IE <- function(chemicals_for_IE_prediction,
                                 fingerprints = ""){
 
   # Read in MS2Quant model
-  data_list_sirius <- readRDS(system.file("model", "model_MS2Quant_xgbTree_allData.RData", package = "MS2Quant"))
-  MS2Quant = data_list_sirius$model
+  MS2Quant <- getModel()
 
   if (is.character(chemicals_for_IE_prediction))
   {
