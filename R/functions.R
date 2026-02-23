@@ -24,7 +24,7 @@ getModel <- function()
   MS2Quant = data_list_sirius$model
   # patch up embedded XGBoost model, since we can't realiably serialize that with saveRDS()/readRDS() between XGBoost
   # versions
-  expmod <- xgboost::xgb.load(system.file("model", "model_MS2Quant_xgb.model", package = "MS2Quant"))
+  expmod <- xgboost::xgb.load(system.file("model", "model_MS2Quant_xgb.ubj", package = "MS2Quant"))
   # fill in missing metadata from the original model, which is needed for predict() to work
   restoreNames <- c("feature_names", "nfeatures", "xNames", "problemType")
   expmod[restoreNames] <- MS2Quant$finalModel[restoreNames]
