@@ -26,9 +26,8 @@ getModel <- function()
   # versions
   expmod <- xgboost::xgb.load(system.file("model", "model_MS2Quant_xgb.ubj", package = "MS2Quant"))
   # fill in missing metadata from the original model, which is needed for predict() to work
-  restoreNames <- c("feature_names", "nfeatures", "xNames", "problemType")
-  expmod[restoreNames] <- MS2Quant$finalModel[restoreNames]
-  MS2Quant$finalModel <- expmod
+  meta <- readRDS(system.file("model", "model_MS2Quant_xgb.rds", package = "MS2Quant"))
+  expmod[names(meta)] <- meta
   return(MS2Quant)
 }
 
