@@ -27,7 +27,12 @@ getModel <- function()
   expmod <- xgboost::xgb.load(system.file("model", "model_MS2Quant_xgb.ubj", package = "MS2Quant"))
   # fill in missing metadata from the original model, which is needed for predict() to work
   meta <- readRDS(system.file("model", "model_MS2Quant_xgb.rds", package = "MS2Quant"))
-  expmod[names(meta)] <- meta
+  # HACK: we cannot directly set fields of the xgboost model, so we create a new dummy model and merge the booster and
+  # metatdata.
+  newmod <- meta
+  newmod[names(expmod)] <- expmod
+  class(newmod) <- class(expmod)
+  MS2Quant$finalModel <- newmod
   return(MS2Quant)
 }
 
